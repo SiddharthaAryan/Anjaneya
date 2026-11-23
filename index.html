@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pay Together · Walkthrough · Team VISHWAKARMA</title>
+<style>
+:root{--ink:#232F3E;--deep:#131A22;--or:#FF9900;--ord:#E47911;--yel:#FFD814;--teal:#007185;--grn:#067D62;--red:#B12704;--grey:#F3F5F7;--line:#DDE2E8;--mut:#6B7785}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0B1016;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+b{font-weight:800}
+#app{min-height:100vh;display:flex;flex-direction:column;align-items:center}
+.topbar{width:100%;display:flex;justify-content:space-between;align-items:center;padding:10px 18px;font-size:12px;color:#9AA5B1}
+.topbar .brand{font-weight:800;color:#fff;letter-spacing:.02em}.topbar .brand i{font-style:normal;color:var(--or)}
+.pill{display:inline-block;padding:3px 9px;border-radius:999px;background:#232F3E;color:#C7CFD8;font-weight:700;font-size:11px}
+#frame{position:relative}
+#stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;overflow:hidden;border-radius:14px;background:#131A22;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+#stage.paused *{animation-play-state:paused!important}
+/* letterbox chrome */
+.hud{position:absolute;z-index:50;left:22px;right:22px;top:16px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.hud .chap{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--or);background:rgba(19,26,34,.7);padding:6px 12px;border-radius:999px;backdrop-filter:blur(6px)}
+.hud .tm{font-size:12px;color:#9AA5B1;font-variant-numeric:tabular-nums;background:rgba(19,26,34,.7);padding:6px 10px;border-radius:999px}
+.prog{position:absolute;z-index:50;left:0;right:0;bottom:0;height:5px;background:rgba(255,255,255,.08)}
+.prog .bar{height:100%;width:0;background:linear-gradient(90deg,var(--or),var(--yel))}
+.prog .tick{position:absolute;top:-3px;width:2px;height:11px;background:rgba(255,255,255,.35)}
+#caption{position:absolute;z-index:60;left:50%;bottom:28px;transform:translateX(-50%);max-width:980px;width:calc(100% - 80px);text-align:center;font-size:23px;line-height:1.38;font-weight:600;color:#fff;background:rgba(10,14,20,.78);padding:12px 22px;border-radius:14px;backdrop-filter:blur(8px);transition:opacity .35s,transform .35s;transform-origin:center}
+#caption.swap{opacity:0}
+#caption b{color:var(--yel)}
+/* layers */
+.layer{position:absolute;inset:0;opacity:0;transform:scale(1.035);transition:opacity .7s ease,transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.layer.in{opacity:1;transform:none}
+.layer.out{opacity:0;transform:scale(.985)}
+.bg{position:absolute;inset:0;background:radial-gradient(900px 520px at 20% 30%,rgba(255,153,0,.18),transparent 60%),radial-gradient(800px 600px at 85% 75%,rgba(0,113,133,.22),transparent 60%),linear-gradient(160deg,#1B2533,#0E141C)}
+.bg.warm{background:radial-gradient(900px 600px at 50% 20%,rgba(255,216,20,.22),transparent 60%),radial-gradient(700px 500px at 10% 90%,rgba(255,153,0,.25),transparent 60%),linear-gradient(160deg,#2A2216,#151A22)}
+.grain{position:absolute;inset:0;opacity:.07;background-image:radial-gradient(#fff 1px,transparent 1px);background-size:3px 3px;mix-blend-mode:overlay;pointer-events:none}
+.f{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.f.on{opacity:1;transform:none}
+.f.l{transform:translateX(-30px)}.f.r{transform:translateX(30px)}.f.z{transform:scale(.85)}
+.f.on.l,.f.on.r,.f.on.z{transform:none}
+.abs{position:absolute}
+/* avatar */
+.who{position:absolute}
+.who .avwrap{position:relative;transition:transform 1.4s cubic-bezier(.2,.7,.2,1)}
+.av{width:100%;height:auto;display:block;overflow:visible;filter:drop-shadow(0 18px 24px rgba(0,0,0,.35))}
+.avbody{animation:breathe 3.8s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%;transition:transform .6s}
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+.av .head{transition:transform .6s cubic-bezier(.3,.8,.3,1.2);transform-box:fill-box;transform-origin:50% 90%}
+.av[data-emo=blush] .head{transform:rotate(-6deg)}
+.av[data-emo=delighted] .head{transform:rotate(3deg) translateY(-3px)}
+.av[data-emo=thinking] .head{transform:rotate(5deg)}
+.av[data-emo=tired] .head{transform:rotate(-3deg) translateY(3px)}
+.av[data-emo=skeptical] .head{transform:rotate(-4deg)}
+.av .m{opacity:0;transition:opacity .22s;fill:none;stroke:#5A2B22;stroke-width:4.2;stroke-linecap:round}
+.av .m-grin{fill:#8C2F2B;stroke:#5A2B22;stroke-width:3}
+.av .m-o{fill:#7A2A26;stroke:none}
+.av[data-emo=neutral] .m-neutral,.av[data-emo=tired] .m-flat,.av[data-emo=happy] .m-smile,.av[data-emo=blush] .m-smile,.av[data-emo=relieved] .m-smile,.av[data-emo=delighted] .m-grin,.av[data-emo=surprised] .m-o,.av[data-emo=worried] .m-worried,.av[data-emo=anxious] .m-worried,.av[data-emo=thinking] .m-flat,.av[data-emo=skeptical] .m-flat{opacity:1}
+.av .eyes{animation:blink 4.6s infinite;transform-box:fill-box;transform-origin:center}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}95.5%{transform:scaleY(.08)}}
+.av .eo{transition:transform .3s,opacity .2s;transform-box:fill-box;transform-origin:center}
+.av .eo ellipse{fill:#2A1E1A}
+.av .eh{opacity:0;transition:opacity .2s}
+.av .eh path{fill:none;stroke:#2A1E1A;stroke-width:4;stroke-linecap:round}
+.av[data-emo=delighted] .eo,.av[data-emo=blush] .eo,.av[data-emo=relieved] .eo{opacity:0}
+.av[data-emo=delighted] .eh,.av[data-emo=blush] .eh,.av[data-emo=relieved] .eh{opacity:1}
+.av[data-emo=tired] .eo{transform:scaleY(.42) translateY(3px)}
+.av[data-emo=surprised] .eo{transform:scale(1.25)}
+.av .brow{fill:none;stroke:#3A2620;stroke-width:4.5;stroke-linecap:round;transition:transform .35s;transform-box:fill-box;transform-origin:center}
+.av[data-emo=worried] .bl,.av[data-emo=anxious] .bl{transform:rotate(-14deg) translateY(-2px)}
+.av[data-emo=worried] .br,.av[data-emo=anxious] .br{transform:rotate(14deg) translateY(-2px)}
+.av[data-emo=surprised] .brow{transform:translateY(-7px)}
+.av[data-emo=delighted] .brow,.av[data-emo=blush] .brow{transform:translateY(-4px)}
+.av[data-emo=skeptical] .br{transform:translateY(-8px) rotate(-10deg)}.av[data-emo=skeptical] .bl{transform:rotate(8deg) translateY(2px)}
+.av[data-emo=thinking] .bl{transform:translateY(-5px) rotate(-6deg)}
+.av[data-emo=tired] .brow{transform:translateY(3px)}
+.av .blush ellipse{fill:#FF6B7A}
+.av .blush{opacity:0;transition:opacity .6s}
+.av[data-emo=blush] .blush{opacity:.65}.av[data-emo=delighted] .blush{opacity:.32}.av[data-emo=happy] .blush{opacity:.18}
+.av .sweat{fill:#8ED3FF;opacity:0;transition:opacity .3s}
+.av[data-emo=anxious] .sweat,.av[data-emo=worried] .sweat{opacity:1;animation:drip 1.6s ease-in infinite}
+@keyframes drip{0%{transform:translateY(0)}100%{transform:translateY(8px)}}
+.av .glasses{fill:rgba(255,255,255,.08);stroke:#2A1E1A;stroke-width:3}
+.hearts{position:absolute;inset:0;pointer-events:none}
+.hearts span{position:absolute;font-size:26px;opacity:0}
+.hearts.on span{animation:floatup 2.4s ease-out infinite}
+@keyframes floatup{0%{opacity:0;transform:translateY(10px) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translateY(-90px) scale(1.1)}}
+.bubble{position:absolute;z-index:5;width:max-content;max-width:270px;background:#fff;color:#131A22;font-size:17px;font-weight:700;line-height:1.3;padding:11px 15px;border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.3);opacity:0;transform:translateY(10px) scale(.9);transform-origin:0 100%;transition:opacity .3s,transform .4s cubic-bezier(.3,.9,.3,1.3)}
+.bubble.on{opacity:1;transform:none}
+.bubble:after{content:"";position:absolute;left:22px;bottom:-9px;border:10px solid transparent;border-top-color:#fff;border-bottom:0}
+.bubble.rt{transform-origin:100% 100%}.bubble.rt:after{left:auto;right:22px}
+.nametag{margin-top:6px;text-align:center}
+.nametag b{display:block;font-size:20px}
+.nametag span{font-size:13px;color:#C7CFD8}
+/* phone */
+.phone{position:absolute;width:250px;height:500px;border-radius:38px;background:#0A0E13;padding:11px;box-shadow:0 30px 60px rgba(0,0,0,.5),inset 0 0 0 2px #2b3440}
+.phone .scr{width:100%;height:100%;border-radius:28px;background:#fff;overflow:hidden;display:flex;flex-direction:column;color:#131A22;position:relative}
+.phone .sb{display:flex;justify-content:space-between;font-size:11px;font-weight:700;padding:9px 18px 3px;color:#4A5568}
+.phone .ah{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid #EEF1F4;font-size:12px;color:var(--mut)}
+.phone .ah b{color:#232F3E;font-size:13px}.phone .ah b i{font-style:normal;color:var(--or)}
+.pb{flex:1;padding:12px;display:flex;flex-direction:column;gap:9px;transition:opacity .3s}
+.pb.swap{opacity:0}
+.phone.buzz{animation:buzz .5s ease 3}
+@keyframes buzz{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg) translateX(-3px)}75%{transform:rotate(3deg) translateX(3px)}}
+.ntf{background:#F3F5F7;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:1.35;animation:slidein .5s cubic-bezier(.2,.8,.2,1.2)}
+.ntf b{display:block;font-size:13px}
+.ntf.warn{background:#FFF4E0}
+@keyframes slidein{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+.cpn{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;border:2px dashed var(--or);border-radius:14px;position:relative;overflow:hidden;animation:pop .6s cubic-bezier(.3,.9,.3,1.4)}
+.cpn div{border-radius:10px;padding:10px 4px;text-align:center}
+.cpn b{display:block;font-size:24px;line-height:1.05}
+.cpn span{font-size:10.5px;font-weight:800}
+.cpn .u{background:#FFF3DB}.cpn .u b{color:var(--ord)}.cpn .s{background:var(--or)}
+.cpn.used .u{opacity:.45}.cpn.sent .s{opacity:.45}
+.cpn:after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.85),transparent);animation:shine 1.6s ease .4s}
+@keyframes shine{to{left:130%}}
+@keyframes pop{from{opacity:0;transform:scale(.6) rotate(-4deg)}to{opacity:1;transform:none}}
+.row{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0}
+.row.t{font-weight:800;border-top:1px solid #EEF1F4;padding-top:7px;font-size:14px}
+.btnp{background:var(--or);color:#131A22;font-weight:800;border-radius:12px;text-align:center;padding:11px;font-size:14px;position:relative;overflow:hidden}
+.btnp.press{animation:press .4s ease}
+@keyframes press{50%{transform:scale(.94)}}
+.ok{display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:8px;animation:pop .5s cubic-bezier(.3,.9,.3,1.4)}
+.ok .c{width:62px;height:62px;border-radius:50%;background:var(--grn);color:#fff;display:grid;place-items:center;font-size:32px;font-weight:900}
+.ok b{font-size:15px}.ok span{font-size:12px;color:var(--mut)}
+.ct{display:flex;align-items:center;gap:9px;padding:8px;border-radius:12px;border:1.5px solid #EEF1F4;font-size:13px;transition:all .3s}
+.ct i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font-style:normal;font-weight:800;flex:none}
+.ct small{display:block;font-size:11px;color:var(--mut)}
+.ct.sel{border-color:var(--or);background:#FFF3DB;transform:scale(1.03)}
+.tap{position:absolute;width:44px;height:44px;border-radius:50%;border:3px solid var(--or);opacity:0;pointer-events:none}
+.tap.go{animation:tap .7s ease-out}
+@keyframes tap{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(1.6)}}
+/* scene bits */
+.title-xl{font-size:110px;font-weight:900;letter-spacing:-.04em;line-height:.95}
+.title-xl i{font-style:normal;color:var(--or)}
+.hl{background:linear-gradient(100deg,rgba(255,216,20,0) 1%,rgba(255,216,20,.92) 3%,rgba(255,216,20,.7) 92%,rgba(255,216,20,0) 99%);color:#131A22;padding:0 .2em;border-radius:.3em}
+.bigcpn{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;background:#fff;border:3px dashed var(--or);border-radius:20px;width:420px;box-shadow:0 30px 60px rgba(0,0,0,.4)}
+.bigcpn div{border-radius:14px;padding:18px 8px;text-align:center;color:#131A22}
+.bigcpn b{display:block;font-size:52px;line-height:1}
+.bigcpn span{font-size:15px;font-weight:800}
+.bigcpn .u{background:#FFF3DB}.bigcpn .u b{color:var(--ord)}.bigcpn .s{background:var(--or)}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:16px 18px;backdrop-filter:blur(6px)}
+.card.white{background:#fff;color:#131A22;border:0}
+.lbl{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--or)}
+.cal{display:grid;grid-template-columns:repeat(7,46px);gap:7px;margin-top:10px}
+.cal div{height:46px;border-radius:10px;background:rgba(255,255,255,.07);display:grid;place-items:center;font-weight:800;font-size:15px;color:#C7CFD8;position:relative;transition:all .4s}
+.cal .usual{box-shadow:inset 0 0 0 2.5px var(--or);color:#fff}
+.cal .today{background:var(--red);color:#fff;animation:pulse 1.2s ease infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(177,39,4,.25)}}
+.cal small{position:absolute;bottom:-17px;font-size:10px;font-weight:700;color:var(--or);white-space:nowrap}
+.radar{width:150px;height:150px;border-radius:50%;position:relative;background:radial-gradient(circle,rgba(255,153,0,.08) 0 30%,transparent 31%),repeating-radial-gradient(circle,rgba(255,153,0,.25) 0 1px,transparent 2px 25px);border:2px solid rgba(255,153,0,.5);overflow:hidden}
+.radar:before{content:"";position:absolute;inset:0;background:conic-gradient(from 0deg,rgba(255,153,0,.55),transparent 25%);animation:spin 1.6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.radar .dot{position:absolute;left:62%;top:30%;width:14px;height:14px;border-radius:50%;background:var(--red);box-shadow:0 0 0 6px rgba(177,39,4,.3);animation:pulse 1s infinite}
+.chip{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#131A22;font-weight:800;font-size:15px;padding:9px 14px;border-radius:999px;box-shadow:0 10px 24px rgba(0,0,0,.3)}
+.chip.or{background:var(--or)}.chip.grn{background:var(--grn);color:#fff}.chip.dk{background:#232F3E;color:#fff}
+.flyer{position:absolute;z-index:20;width:120px;opacity:0}
+.flyer.go{animation:fly 2.1s cubic-bezier(.45,.05,.4,1) forwards}
+@keyframes fly{0%{opacity:0;transform:translate(0,0) rotate(-8deg) scale(.6)}10%{opacity:1}50%{transform:translate(260px,-200px) rotate(10deg) scale(1.15)}90%{opacity:1}100%{opacity:0;transform:translate(560px,-10px) rotate(-4deg) scale(.7)}}
+.flyer .t{background:var(--or);color:#131A22;border-radius:12px;padding:10px;text-align:center;font-weight:900;font-size:22px;box-shadow:0 14px 30px rgba(0,0,0,.4)}
+.flyer .t small{display:block;font-size:11px}
+.trail{position:absolute;z-index:19;font-size:22px;opacity:0}
+.trail.go{animation:trail 2.1s ease forwards}
+@keyframes trail{0%{opacity:0}30%{opacity:1}100%{opacity:0;transform:translate(420px,-120px)}}
+.tl{position:absolute;height:14px;border-radius:999px;background:rgba(255,255,255,.1);overflow:visible}
+.tl .fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;background:linear-gradient(90deg,var(--grn),#2BB673);transition:width 6s linear}
+.tl .mk{position:absolute;top:22px;font-size:12px;font-weight:800;color:#C7CFD8;transform:translateX(-50%);white-space:nowrap}
+.tl .pin{position:absolute;top:-6px;width:4px;height:26px;background:#fff;border-radius:2px;transform:translateX(-50%)}
+.pay{position:absolute;background:#fff;color:#131A22;border-radius:14px;padding:9px 13px;font-size:14px;font-weight:700;box-shadow:0 12px 26px rgba(0,0,0,.35);white-space:nowrap}
+.pay small{display:block;font-size:11.5px;color:var(--grn);font-weight:800}
+.link{position:absolute;height:6px;border-radius:6px;background:linear-gradient(90deg,var(--or),var(--yel),var(--or));background-size:200% 100%;animation:flow 1.2s linear infinite;transform-origin:0 50%;transform:scaleX(0);transition:transform 1s cubic-bezier(.2,.7,.2,1);box-shadow:0 0 22px rgba(255,216,20,.7)}
+.link.on{transform:scaleX(1)}
+@keyframes flow{to{background-position:-200% 0}}
+.ring{position:absolute;width:140px;height:140px;border-radius:50%;border:4px solid var(--yel);display:grid;place-items:center;text-align:center;font-weight:900;font-size:15px;color:#fff;background:radial-gradient(circle,rgba(255,153,0,.35),rgba(19,26,34,.9));box-shadow:0 0 40px rgba(255,216,20,.6);opacity:0;transform:scale(.3);transition:all .7s cubic-bezier(.3,.9,.3,1.4)}
+.ring.on{opacity:1;transform:none}
+.ring span{font-size:34px;display:block}
+.pcard{position:absolute;width:370px;height:178px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);padding:12px 14px;display:grid;grid-template-columns:92px 1fr 92px;align-items:center;gap:4px}
+.pcard .mini{position:relative}
+.pcard .mid{text-align:center;font-size:13px;color:#C7CFD8;line-height:1.3}
+.pcard .mid b{display:block;color:#fff;font-size:14px}
+.pcard .mid .arrow{font-size:20px;color:var(--or)}
+.pcard .nm{position:absolute;bottom:-4px;left:0;right:0;text-align:center;font-size:12px;font-weight:800}
+.pcard .res{position:absolute;right:12px;top:-12px}
+.grids{position:absolute;display:flex;gap:36px}
+.gpanel{width:330px}
+.gpanel h4{font-size:15px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline}
+.gpanel h4 span{font-size:34px;font-weight:900}
+.dots{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+.pr{height:18px;display:flex;align-items:center;justify-content:center;gap:2px}
+.pr i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .4s}
+.pr b{width:5px;height:2px;background:rgba(255,255,255,.12);transition:all .4s}
+.pr.lit i{background:var(--or);box-shadow:0 0 8px rgba(255,153,0,.8)}
+.pr.lit b{background:var(--yel);height:3px}
+.pr.litc i{background:#4FB3C4;box-shadow:0 0 6px rgba(79,179,196,.7)}
+.delta{position:absolute;opacity:0;transform:scale(.5);transition:all .6s cubic-bezier(.3,.9,.3,1.5)}
+.delta.on{opacity:1;transform:none}
+/* dashboard */
+.laptop{position:absolute;width:820px;height:520px;background:#0A0E13;border-radius:18px;padding:12px;box-shadow:0 30px 70px rgba(0,0,0,.55)}
+.laptop:after{content:"";position:absolute;left:-30px;right:-30px;bottom:-16px;height:16px;border-radius:0 0 18px 18px;background:linear-gradient(#3a4450,#1d242d)}
+.dash{width:100%;height:100%;background:#F3F5F7;border-radius:10px;color:#131A22;padding:14px;display:grid;grid-template-rows:auto auto 1fr;gap:10px;overflow:hidden}
+.dh{display:flex;justify-content:space-between;align-items:center}
+.dh b{font-size:16px}.dh b i{font-style:normal;color:var(--ord)}
+.dh span{font-size:11px;font-weight:800;background:var(--or);padding:3px 8px;border-radius:999px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.kpi{background:#fff;border-radius:10px;padding:9px 10px;opacity:0;transform:translateY(10px);transition:all .5s}
+.kpi.on{opacity:1;transform:none}
+.kpi .k{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+.kpi .v{font-size:26px;font-weight:900;line-height:1.15}
+.kpi .s{font-size:11px;color:var(--mut)}
+.kpi.hlk{box-shadow:inset 0 0 0 2px var(--or)}.kpi.hlk .v{color:var(--ord)}
+.dmain{display:grid;grid-template-columns:1.05fr 1fr;gap:10px;min-height:0}
+.dpanel{background:#fff;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column}
+.dpanel .k{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
+.bars{flex:1;display:flex;align-items:flex-end;gap:14px;padding:0 6px 22px;position:relative}
+.bars .b{flex:1;border-radius:6px 6px 0 0;height:0;transition:height 1.1s cubic-bezier(.2,.7,.2,1);position:relative}
+.bars .b em{position:absolute;top:-20px;left:0;right:0;text-align:center;font-style:normal;font-weight:900;font-size:14px}
+.bars .b span{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-size:11px;font-weight:800;color:var(--mut)}
+.gate{display:flex;gap:8px;align-items:center;padding:7px 8px;border-radius:9px;background:#F3F5F7;font-size:12.5px;margin-bottom:6px;opacity:.35;transition:all .4s}
+.gate.on{opacity:1}
+.gate .ic{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:12px;background:#C9D1DA;color:#fff;flex:none}
+.gate.pass .ic{background:var(--grn)}.gate.fail .ic{background:var(--red)}
+.verdict{margin-top:auto;border-radius:10px;padding:10px 12px;font-weight:900;font-size:16px;color:#fff;background:#C9D1DA;opacity:0;transform:scale(.9);transition:all .5s cubic-bezier(.3,.9,.3,1.4)}
+.verdict.on{opacity:1;transform:none}
+.verdict.go{background:var(--grn)}.verdict.hold{background:#232F3E}
+.verdict small{display:block;font-weight:600;font-size:11.5px;opacity:.9}
+.desk{position:absolute;height:24px;border-radius:8px;background:linear-gradient(#5b4636,#3b2c22);box-shadow:0 20px 40px rgba(0,0,0,.5)}
+.mug{position:absolute;font-size:40px}
+.confetti{position:absolute;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:10px;height:16px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(780px) rotate(720deg)}}
+.quote{font-size:40px;font-weight:800;line-height:1.25;letter-spacing:-.01em}
+/* dock */
+#dock{width:100%;max-width:1280px;padding:14px 12px 0;display:none;flex-direction:column;gap:10px}
+#dock.on{display:flex;animation:slidein .6s ease}
+.dockrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center}
+.dockrow button{border:1px solid #2F3B49;background:#1A232E;color:#E6EBF0;border-radius:999px;padding:8px 13px;font-weight:700;font-size:13px;cursor:pointer}
+.dockrow button:hover{border-color:var(--or)}
+.dockrow button.on{background:var(--or);border-color:var(--or);color:#131A22}
+.dockrow button.main{background:var(--or);color:#131A22;border-color:var(--or)}
+.unlock{font-size:13px;color:#9AA5B1;text-align:center}
+.unlock b{color:var(--or)}
+/* explore */
+#explore{display:none;width:100%;max-width:1280px;padding:26px 12px 60px}
+#explore.on{display:block}
+#explore h2{font-size:28px;margin:22px 0 4px}
+#explore h2 i{font-style:normal;color:var(--or)}
+#explore .sub{color:#9AA5B1;margin-bottom:14px;font-size:14px}
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.pcx{background:#1A232E;border:1px solid #2A3644;border-radius:16px;padding:12px;display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:center}
+.pcx b{font-size:15px}.pcx small{display:block;color:#9AA5B1;font-size:12px;margin:2px 0 6px}
+.pcx p{font-size:12.5px;line-height:1.4;color:#D5DBE2}
+.pcx .emo{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.pcx .emo button{font-size:11px;border:1px solid #2F3B49;background:#0F151C;color:#C7CFD8;border-radius:999px;padding:2px 7px;cursor:pointer}
+.xdash{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}
+.xbox{background:#1A232E;border:1px solid #2A3644;border-radius:16px;padding:16px}
+.seg{display:inline-flex;background:#0F151C;border-radius:12px;padding:4px;margin-bottom:12px}
+.seg button{border:0;background:transparent;color:#C7CFD8;font-weight:700;padding:8px 12px;border-radius:9px;cursor:pointer;font-size:13px}
+.seg button.on{background:var(--or);color:#131A22}
+.sl{margin:10px 0}
+.sl label{display:flex;justify-content:space-between;font-size:13px;color:#C7CFD8;font-weight:700}
+.sl input{width:100%;accent-color:var(--or)}
+table.xt{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.xt th{font-size:11px;color:#9AA5B1;text-transform:uppercase;letter-spacing:.04em;text-align:right;padding:6px 5px;border-bottom:1px solid #2F3B49}
+.xt td{text-align:right;padding:7px 5px;border-bottom:1px solid #232D39}
+.xt th:first-child,.xt td:first-child{text-align:left}
+.xt tr.d td{color:var(--or);font-weight:800}
+.xg{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:#0F151C;margin-bottom:6px;font-size:13px}
+.xg .ic{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:12px;flex:none}
+.xv{border-radius:12px;padding:12px 14px;font-weight:900;font-size:18px;margin-top:8px}
+.mdefs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.md{background:#1A232E;border:1px solid #2A3644;border-radius:14px;padding:12px 14px;font-size:13px;color:#D5DBE2}
+.md b{display:block;font-size:15px;color:#fff;margin-bottom:4px}
+.md code{display:block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:#0F151C;color:#FFD8A0;padding:6px 8px;border-radius:8px;margin:6px 0}
+.md.new{border-color:var(--or)}
+footer{color:#6B7785;font-size:12px;text-align:center;padding:24px 12px 30px;max-width:1000px;line-height:1.5}
+@media (max-width:900px){#caption{position:relative;left:auto;bottom:auto;transform:none;margin:10px auto 0;font-size:16px;width:100%}.pgrid{grid-template-columns:1fr 1fr}.xdash,.mdefs{grid-template-columns:1fr}}
+@media (max-width:560px){.pgrid{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.avbody,.av .eyes{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar"><span class="brand">Pay <i>Together</i> · concept walkthrough</span><span><span class="pill">Team VISHWAKARMA · DataZoids 5.0</span> <span class="pill" style="background:#3A2A12;color:#FFD8A0">Simulated · fictional people</span></span></div>
+  <div id="frame">
+    <div id="stage">
+      <div class="hud"><span class="chap" id="chap"></span><span class="tm" id="tm">0:00</span></div>
+      <div class="prog"><div class="bar" id="bar"></div></div>
+    </div>
+    <div id="caption"></div>
+  </div>
+  <div id="dock">
+    <div class="unlock">Walkthrough complete. <b>Manual mode unlocked</b>: replay any chapter, step through, or explore the dashboard below.</div>
+    <div class="dockrow" id="chips"></div>
+    <div class="dockrow"><button id="bPrev">← Back</button><button id="bPlay" class="main">❚❚ Pause</button><button id="bNext">Next →</button><button id="bAll">↻ Replay full walkthrough</button><button id="bExp">Explore the dashboard ↓</button></div>
+  </div>
+  <div id="explore"></div>
+  <footer>Concept prototype for a case competition (KOED Amazon Pay India case, IIM Kashipur DataZoids 5.0). Not affiliated with or endorsed by Amazon. All people are fictional, and every number is simulated from stated assumptions.</footer>
+</div>
+<script>
+/* Pay Together — simulated pilot model (illustrative assumptions, not Amazon Pay data).
+   Unit of randomisation: a "group" = one eligible sender + one pre-identified contact,
+   frozen before assignment. The contact exists in every arm, so the denominator is identical. */
+const PT_MODEL = (function () {
+  const BASE = {
+    groups: 1000,          // groups per arm
+    margin: 0.04,          // pre-reward net margin on payment value
+    msgCost: 0.25,         // ₹ per assigned group for a reminder (arms B–D)
+    shareLinkCost: 0.10,   // extra ₹ per assigned group for the share link (arm D)
+    billAmt: 840,          // sender's lapsed bill (offer window payment)
+    recipWindowAmt: 450,   // contact's payment in the offer window
+    senderAmt: 700,        // avg sender payment in follow-up (days 8–37)
+    recipAmt: 450,         // avg contact payment in follow-up
+    senderPays: 5,         // payments per repeating sender in follow-up
+    recipPays: 3,          // payments per repeating contact in follow-up
+    contactWindow: 0.12,   // contact's baseline chance of paying in the window
+    facePersonal: 30,
+    faceSplit: 15,
+  };
+  // ws = sender pays in offer window (days 1–7); s / r = sender / contact make ≥1 reward-free payment in days 8–37
+  const FIXED = {
+    A: { ws: 0.30, s: 0.16, r: 0.09 },
+    B: { ws: 0.36, s: 0.18, r: 0.09 },
+    C: { ws: 0.46, s: 0.19, r: 0.09 },
+  };
+  const SCENARIOS = {
+    habit:   { key: "habit",   label: "Profitable repeat usage",            share: 0.51, recipRedeem: 0.45, D: { ws: 0.42, s: 0.22, r: 0.14 } },
+    shallow: { key: "shallow", label: "Coupons shared, little repeat lift", share: 0.51, recipRedeem: 0.45, D: { ws: 0.42, s: 0.19, r: 0.095 } },
+  };
+  const GATE_PP = 3; // minimum D − C lift in reward-free group repeat, percentage points
+
+  function arm(code, p, sc, b) {
+    const n = b.groups;
+    const isD = code === "D";
+    const shared = isD ? sc.share : 0;
+    const recipRedeemed = isD ? shared * sc.recipRedeem : 0;            // share of groups where contact redeemed
+    const contactWindowP = b.contactWindow + recipRedeemed * (1 - b.contactWindow);
+    const groupRepeat = 1 - (1 - p.s) * (1 - p.r);
+    const followPays = p.s * b.senderPays + p.r * b.recipPays;          // per assigned group
+    const followValue = p.s * b.senderPays * b.senderAmt + p.r * b.recipPays * b.recipAmt;
+    const windowValue = p.ws * b.billAmt + contactWindowP * b.recipWindowAmt;
+    let reward = 0;
+    if (code === "C") reward = p.ws * b.facePersonal;
+    if (isD) reward = p.ws * b.faceSplit + recipRedeemed * b.faceSplit;
+    const campaign = code === "A" ? 0 : b.msgCost + (isD ? b.shareLinkCost : 0);
+    const contribution = b.margin * (windowValue + followValue) - reward - campaign; // per group
+    return {
+      code, n,
+      senderRepeat: p.s, contactRepeat: p.r, groupRepeat,
+      payFreq: followPays, avgAmt: followValue / followPays,
+      cohesion: isD ? shared : null,
+      recipRedeemAmongSharing: isD ? sc.recipRedeem : null,
+      rewardPerGroup: reward, campaignPerGroup: campaign,
+      contributionPerGroup: contribution, contributionTotal: contribution * n,
+    };
+  }
+
+  function compute(scKey, over) {
+    const b = Object.assign({}, BASE, (over && over.base) || {});
+    const sc = JSON.parse(JSON.stringify(SCENARIOS[scKey]));
+    if (over) {
+      if (over.share != null) sc.share = over.share;
+      if (over.recipRedeem != null) sc.recipRedeem = over.recipRedeem;
+      if (over.Ds != null) sc.D.s = over.Ds;
+      if (over.Dr != null) sc.D.r = over.Dr;
+    }
+    const arms = {};
+    ["A", "B", "C"].forEach((k) => (arms[k] = arm(k, FIXED[k], sc, b)));
+    arms.D = arm("D", sc.D, sc, b);
+    const C = arms.C, D = arms.D, B = arms.B;
+    const diff = D.groupRepeat - C.groupRepeat;
+    const se = Math.sqrt((D.groupRepeat * (1 - D.groupRepeat)) / b.groups + (C.groupRepeat * (1 - C.groupRepeat)) / b.groups);
+    const cmp = {
+      repeatPP: diff * 100, repeatLo: (diff - 1.96 * se) * 100, repeatHi: (diff + 1.96 * se) * 100,
+      senderPP: (D.senderRepeat - C.senderRepeat) * 100,
+      contactPP: (D.contactRepeat - C.contactRepeat) * 100,
+      contribDvC: (D.contributionPerGroup - C.contributionPerGroup) * b.groups,
+      contribDvB: (D.contributionPerGroup - B.contributionPerGroup) * b.groups,
+      contribCvB: (C.contributionPerGroup - B.contributionPerGroup) * b.groups,
+      contribBvA: (B.contributionPerGroup - arms.A.contributionPerGroup) * b.groups,
+    };
+    const gates = {
+      repeat: cmp.repeatPP >= GATE_PP && cmp.repeatLo > 0,
+      vsC: cmp.contribDvC > 0,
+      vsB: cmp.contribDvB > 0,
+    };
+    let verdict, why;
+    if (gates.repeat && gates.vsC && gates.vsB) { verdict = "Advance to a larger live test"; why = "Groups came back without a reward, and the split offer beats both the ₹30 coupon and a plain reminder on contribution."; }
+    else if (!gates.repeat && gates.vsC) { verdict = "Hold the split offer"; why = "It looks cheaper than the ₹30 coupon only because many shared coupons go unused. Repeat behaviour barely moved."; }
+    else if (gates.repeat && !gates.vsB) { verdict = "Hold the coupon, keep the reminder"; why = "Groups returned, but a reminder alone earns more contribution than paying for coupons."; }
+    else { verdict = "Stop the split offer"; why = "It neither changes repeat behaviour nor earns its budget."; }
+    return { base: b, scenario: sc, arms, cmp, gates, verdict, why, gatePP: GATE_PP };
+  }
+  return { BASE, FIXED, SCENARIOS, GATE_PP, compute };
+})();
+if (typeof module !== "undefined") module.exports = PT_MODEL;
+
+</script>
+<script>
+(function(){
+"use strict";
+/* ================= avatars ================= */
+const CAST={
+ riya:{skin:"#E2AE8A",hair:"bob",hc:"#2B1B14",shirt:"#E4572E",name:"Riya",role:"28 · product designer, Pune"},
+ kabir:{skin:"#C98E67",hair:"short",hc:"#1E1410",shirt:"#2F7DA8",name:"Kabir",role:"27 · Riya's college friend"},
+ meera:{skin:"#D7A07A",hair:"bun",hc:"#241812",shirt:"#232F3E",glasses:1,name:"Meera",role:"35 · Growth Manager, Amazon Pay"},
+ iyer:{skin:"#C78E6A",hair:"grey",hc:"#D9DDE2",shirt:"#7A6A9E",glasses:1,mous:1,name:"Mr. Iyer",role:"58 · retired banker, Chennai"},
+ divya:{skin:"#D6A17F",hair:"long",hc:"#2A1A12",shirt:"#E8A33D",name:"Divya",role:"31 · his daughter"},
+ aarav:{skin:"#E0B08C",hair:"curly",hc:"#1C120D",shirt:"#3E9C6E",name:"Aarav",role:"21 · student, Delhi"},
+ sameer:{skin:"#B97E58",hair:"short",hc:"#120C09",shirt:"#5868C6",name:"Sameer",role:"21 · his roommate"},
+ fatima:{skin:"#D9A684",hair:"hijab",hc:"#0F6E6B",shirt:"#0F6E6B",name:"Fatima",role:"34 · boutique owner, Lucknow"},
+ zoya:{skin:"#DFAD8B",hair:"long",hc:"#3A2418",shirt:"#C2507A",name:"Zoya",role:"29 · her sister"}
+};
+function shade(hex,a){const n=parseInt(hex.slice(1),16);let r=(n>>16)+a,g=((n>>8)&255)+a,b=(n&255)+a;r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}
+function hairBack(o){const c=o.hc;switch(o.hair){
+ case"bob":return`<path d="M46 104 Q40 34 100 32 Q160 34 154 104 L158 158 Q142 168 128 156 L128 112 L72 112 L72 156 Q58 168 42 158 Z" fill="${c}"/>`;
+ case"long":return`<path d="M44 104 Q38 32 100 30 Q162 32 156 104 L164 196 Q140 210 126 196 L128 120 L72 120 L74 196 Q60 210 36 196 Z" fill="${c}"/>`;
+ case"bun":return`<circle cx="100" cy="34" r="20" fill="${c}"/><path d="M50 100 Q46 44 100 40 Q154 44 150 100 Z" fill="${c}"/>`;
+ case"hijab":return`<path d="M36 110 Q34 30 100 26 Q166 30 164 110 L170 200 Q100 230 30 200 Z" fill="${c}"/>`;
+ default:return"";}}
+function hairFront(o){const c=o.hc;switch(o.hair){
+ case"bob":return`<path d="M53 96 Q56 44 100 42 Q146 44 148 96 Q132 62 104 62 Q80 64 66 78 Q60 86 53 96Z" fill="${c}"/>`;
+ case"long":return`<path d="M52 98 Q54 42 100 40 Q148 42 149 98 Q140 70 118 60 Q96 74 70 68 Q58 80 52 98Z" fill="${c}"/>`;
+ case"short":return`<path d="M52 94 Q48 40 100 38 Q152 40 148 94 Q146 70 132 62 Q118 70 104 60 Q90 70 74 62 Q58 70 52 94Z" fill="${c}"/><path d="M70 50 l8 -10 l6 9 l8 -11 l7 10 l9 -9 l5 11" fill="${c}"/>`;
+ case"bun":return`<path d="M53 92 Q58 50 100 48 Q142 50 147 92 Q128 66 100 66 Q72 66 53 92Z" fill="${c}"/>`;
+ case"grey":return`<path d="M52 98 Q50 58 70 50 Q74 60 78 52 Q100 44 122 52 Q126 60 130 50 Q150 58 148 98 Q144 74 128 68 L72 68 Q56 74 52 98Z" fill="${c}"/>`;
+ case"curly":return`<g fill="${c}">${[[60,70],[72,52],[90,44],[110,44],[128,52],[140,70],[54,88],[146,88],[80,58],[100,52],[120,58]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="15"/>`).join("")}</g>`;
+ case"hijab":return`<path d="M50 112 Q46 40 100 38 Q154 40 150 112 Q150 70 100 62 Q50 70 50 112Z" fill="${shade(c,18)}"/>`;
+ default:return"";}}
+function avatar(key,id){const o=CAST[key];const sk=o.skin;return`<svg class="av" id="${id}" data-emo="neutral" viewBox="0 0 200 232" aria-label="${o.name}">
+<g class="avbody">${hairBack(o)}
+<path d="M26 232 Q30 170 100 162 Q170 170 174 232Z" fill="${o.shirt}"/><path d="M80 168 Q100 186 120 168" fill="none" stroke="${shade(o.shirt,-30)}" stroke-width="4"/>
+<path d="M85 146 h30 v22 q-15 10 -30 0z" fill="${shade(sk,-22)}"/>
+<g class="head">
+${o.hair==="hijab"?"":`<circle cx="53" cy="104" r="9" fill="${sk}"/><circle cx="147" cy="104" r="9" fill="${sk}"/>`}
+<ellipse cx="100" cy="100" rx="47" ry="54" fill="${sk}"/>
+${hairFront(o)}
+<g class="blush"><ellipse cx="72" cy="120" rx="10" ry="6"/><ellipse cx="128" cy="120" rx="10" ry="6"/></g>
+<path class="brow bl" d="M72 82 Q82 76 92 81"/><path class="brow br" d="M108 81 Q118 76 128 82"/>
+<g class="eyes"><g class="eo"><ellipse cx="82" cy="101" rx="5.3" ry="6.6"/><ellipse cx="118" cy="101" rx="5.3" ry="6.6"/><circle cx="84" cy="98.4" r="1.8" fill="#fff"/><circle cx="120" cy="98.4" r="1.8" fill="#fff"/></g>
+<g class="eh"><path d="M75 103 Q82 94 89 103"/><path d="M111 103 Q118 94 125 103"/></g></g>
+${o.glasses?`<g class="glasses"><circle cx="82" cy="101" r="13"/><circle cx="118" cy="101" r="13"/><path d="M95 101h10M69 99l-14-4M131 99l14-4" fill="none"/></g>`:""}
+<path d="M100 106 q-5 10 2 13" fill="none" stroke="${shade(sk,-40)}" stroke-width="3" stroke-linecap="round"/>
+${o.mous?`<path d="M86 124 Q100 116 114 124 Q100 121 86 124Z" fill="#C9CDD2" stroke="#C9CDD2" stroke-width="3"/>`:""}
+<g class="mouth"><path class="m m-neutral" d="M89 130 Q100 133 111 130"/><path class="m m-smile" d="M85 126 Q100 141 115 126"/><path class="m m-grin" d="M83 124 Q100 150 117 124Z"/><ellipse class="m m-o" cx="100" cy="132" rx="6.5" ry="8.5"/><path class="m m-worried" d="M87 135 Q100 125 113 135"/><path class="m m-flat" d="M90 132 L110 130"/></g>
+<path class="sweat" d="M142 70 q7 11 0 15 q-7 -4 0 -15z"/>
+</g></g></svg>`}
+function who(key,id,x,y,w,opt){opt=opt||{};const o=CAST[key];
+ return`<div class="who f ${opt.cls||""}" id="${id}" style="left:${x}px;top:${y}px;width:${w}px"><div class="avwrap" id="${id}-wrap">${avatar(key,id+"-av")}<div class="hearts" id="${id}-h"><span style="left:6%;top:10%">💗</span><span style="left:78%;top:4%;animation-delay:.6s">✨</span><span style="left:84%;top:30%;animation-delay:1.1s">💗</span><span style="left:0%;top:36%;animation-delay:1.5s">✨</span></div>
+ <div class="bubble ${opt.rt?"rt":""}" id="${id}-b" style="${opt.rt?`right:${w*0.62}px`:`left:${w*0.62}px`};top:${opt.by!=null?opt.by:-10}px"></div></div>
+ ${opt.tag===false?"":`<div class="nametag"><b>${o.name}</b><span>${opt.role||o.role}</span></div>`}</div>`}
+/* ================= stage helpers ================= */
+const stage=document.getElementById("stage"),capEl=document.getElementById("caption");
+let layer=null;const Q=id=>layer&&layer.querySelector("#"+id);
+function on(...ids){ids.forEach(i=>{const e=Q(i);e&&e.classList.add("on")})}
+function off(...ids){ids.forEach(i=>{const e=Q(i);e&&e.classList.remove("on")})}
+function emo(id,e){const a=Q(id+"-av");if(a)a.setAttribute("data-emo",e);const h=Q(id+"-h");if(h)h.classList.toggle("on",e==="blush"||e==="delighted")}
+function say(id,t){const b=Q(id+"-b");if(!b)return;if(!t){b.classList.remove("on");return}b.classList.remove("on");setTimeout(()=>{b.innerHTML=t;b.classList.add("on")},120)}
+let capT;function cap(t){clearTimeout(capT);capEl.classList.add("swap");capT=setTimeout(()=>{capEl.innerHTML=t;capEl.classList.remove("swap")},300)}
+function setPB(id,html){const p=Q(id);if(!p)return;p.classList.add("swap");setTimeout(()=>{p.innerHTML=html;p.classList.remove("swap")},280)}
+function count(id,to,dec,pre,suf,ms){const e=Q(id);if(!e)return;const t0=performance.now();ms=ms||1200;const from=0;(function f(n){const k=Math.min(1,(n-t0)/ms),v=from+(to-from)*(1-Math.pow(1-k,3));e.textContent=(pre||"")+(dec===-1?Math.round(v).toLocaleString("en-IN"):v.toFixed(dec))+(suf||"");if(k<1)requestAnimationFrame(f)})(t0)}
+function tap(id,x,y){const e=Q(id);if(!e)return;e.style.left=x+"px";e.style.top=y+"px";e.classList.remove("go");void e.offsetWidth;e.classList.add("go")}
+function confetti(){const c=document.createElement("div");c.className="confetti";const cols=["#FF9900","#FFD814","#067D62","#4FB3C4","#E4572E","#fff"];for(let i=0;i<90;i++){const d=document.createElement("i");d.style.left=Math.random()*100+"%";d.style.background=cols[i%cols.length];d.style.animationDuration=(2.2+Math.random()*1.8)+"s";d.style.animationDelay=(Math.random()*.6)+"s";d.style.transform=`rotate(${Math.random()*360}deg)`;c.appendChild(d)}layer.appendChild(c)}
+function phone(id,x,y,day,body,scale){return`<div class="phone f z" id="${id}" style="left:${x}px;top:${y}px;${scale?`transform-origin:0 0;scale:${scale}`:""}"><div class="scr"><div class="sb"><span>9:41</span><span>●●● 5G</span></div><div class="ah"><b>amazon <i>pay</i></b><span id="${id}-d">${day}</span></div><div class="pb" id="${id}-pb">${body||""}</div><div class="tap" id="${id}-tap"></div></div></div>`}
+const BG=(w)=>`<div class="bg ${w||""}"></div><div class="grain"></div>`;
+const CPN=(cls)=>`<div class="cpn ${cls||""}"><div class="u"><b>₹15</b><span>Use on this bill</span></div><div class="s"><b>₹15</b><span>Share with someone</span></div></div>`;
+const R=PT_MODEL.compute("habit"),S=PT_MODEL.compute("shallow");
+const inr=v=>(v<0?"−":"+")+"₹"+Math.abs(Math.round(v)).toLocaleString("en-IN");
+/* ================= dashboard (in-scene) ================= */
+function dash(id,sc){const r=sc==="habit"?R:S,a=r.arms,c=r.cmp;return`<div class="laptop f r" id="${id}" style="left:420px;top:92px"><div class="dash">
+<div class="dh"><b>amazon <i>pay</i> · Growth console · Pay Together pilot</b><span>${sc==="habit"?"Scenario 1":"Scenario 2"} · simulated</span></div>
+<div class="kpis"><div class="kpi hlk" id="${id}-k1"><div class="k">🤝 Cohesion Factor</div><div class="v" id="${id}-v1">0%</div><div class="s">pairs that shared their ₹15</div></div>
+<div class="kpi" id="${id}-k2"><div class="k">🔁 Payment frequency</div><div class="v" id="${id}-v2">0</div><div class="s">per pair, days 8–37 · ₹30 arm ${a.C.payFreq.toFixed(2)}</div></div>
+<div class="kpi" id="${id}-k3"><div class="k">🧾 Avg payment amount</div><div class="v" id="${id}-v3">₹0</div><div class="s">₹30 arm ₹${Math.round(a.C.avgAmt)}</div></div>
+<div class="kpi" id="${id}-k4"><div class="k">✅ Reward-free repeat</div><div class="v" id="${id}-v4">0%</div><div class="s">vs ${(a.C.groupRepeat*100).toFixed(1)}% with ₹30 for self</div></div></div>
+<div class="dmain"><div class="dpanel"><div class="k">Reward-free repeat by arm, % of pairs</div><div class="bars">
+${["A","B","C","D"].map(k=>`<div class="b" id="${id}-b${k}" style="background:${{A:"#C9D1DA",B:"#8A94A6",C:"#007185",D:"#FF9900"}[k]}"><em style="color:${k==="D"?"#E47911":"#131A22"}">${(a[k].groupRepeat*100).toFixed(1)}</em><span>${{A:"A · usual",B:"B · reminder",C:"C · ₹30 self",D:"D · ₹15+₹15"}[k]}</span></div>`).join("")}</div></div>
+<div class="dpanel"><div class="k">Decision gates</div>
+<div class="gate" id="${id}-g1"><span class="ic">?</span><span>Repeat lift vs ₹30 coupon: <b>${c.repeatPP>=0?"+":""}${c.repeatPP.toFixed(1)} pts</b></span></div>
+<div class="gate" id="${id}-g2"><span class="ic">?</span><span>Earns more than ₹30 coupon: <b>${inr(c.contribDvC)}</b></span></div>
+<div class="gate" id="${id}-g3"><span class="ic">?</span><span>Earns more than a plain reminder: <b>${inr(c.contribDvB)}</b></span></div>
+<div class="verdict ${sc==="habit"?"go":"hold"}" id="${id}-vd">${r.verdict}<small>${sc==="habit"?"All three gates pass":"Cheaper only because shared halves go unused"}</small></div></div></div></div></div>`}
+function dashFill(id,sc){const a=(sc==="habit"?R:S).arms;on(id+"-k1");count(id+"-v1",a.D.cohesion*100,0,"","%");setTimeout(()=>{on(id+"-k2");count(id+"-v2",a.D.payFreq,2)},350);setTimeout(()=>{on(id+"-k3");count(id+"-v3",Math.round(a.D.avgAmt),-1,"₹")},700);setTimeout(()=>{on(id+"-k4");count(id+"-v4",a.D.groupRepeat*100,1,"","%")},1050)}
+function dashBars(id,sc){const a=(sc==="habit"?R:S).arms;["A","B","C","D"].forEach((k,i)=>setTimeout(()=>{const b=Q(id+"-b"+k);if(b)b.style.height=(a[k].groupRepeat/0.38*100)+"%"},i*180))}
+function gate(id,n,pass){const g=Q(id+"-g"+n);if(!g)return;g.classList.add("on",pass?"pass":"fail");g.querySelector(".ic").textContent=pass?"✓":"✕"}
+/* ================= scenes ================= */
+const SC=[
+{t:"Intro",d:7000,b:()=>`${BG("warm")}
+ <div class="abs f" id="i1" style="left:80px;top:96px"><div class="lbl" style="font-size:15px">A 2-minute walkthrough · Amazon Pay India</div><div class="title-xl" style="margin-top:10px">Pay <i>Together</i></div></div>
+ <div class="abs f" id="i2" style="left:84px;top:300px;font-size:30px;font-weight:800"><span class="hl">₹15 for your bill. ₹15 for someone you know.</span></div>
+ <div class="abs f z" id="i3" style="left:780px;top:92px"><div class="bigcpn"><div class="u"><b>₹15</b><span>Use on your bill</span></div><div class="s"><b>₹15</b><span>Share with someone</span></div></div></div>
+ ${who("riya","c1",120,345,165,{role:"the customer"})}${who("kabir","c2",350,345,165,{role:"her friend"})}${who("meera","c3",580,345,165,{role:"the manager"})}
+ <div class="abs f" id="i4" style="left:820px;top:400px;width:380px;font-size:18px;line-height:1.5;color:#E6EBF0">One coupon. Two people. <b style="color:#FFD814">One question:</b> do both of them keep paying after the reward is gone?</div>`,
+ c:[[0,()=>{on("i1");cap("Meet <b>Riya</b>, <b>Kabir</b> and <b>Meera</b>. In two minutes, see how one shared coupon can bring two people back to Amazon Pay.")}],[700,()=>on("i2")],[1300,()=>on("i3")],[2100,()=>on("c1")],[2400,()=>on("c2")],[2700,()=>on("c3")],[3300,()=>{emo("c1","happy");emo("c2","happy");emo("c3","thinking")}],[3900,()=>on("i4")],[5200,()=>{emo("c1","delighted");emo("c2","delighted")}]]},
+{t:"01 · Riya goes quiet",d:12000,b:()=>`${BG()}
+ ${who("riya","r",80,150,300,{by:-30})}
+ <div class="abs card f" id="cal" style="left:440px;top:130px;width:390px"><div class="lbl">This month</div><div style="font-size:15px;color:#C7CFD8;margin-top:4px">Usually pays her ₹840 power bill by the 8th</div>
+ <div class="cal">${Array.from({length:14},(_,i)=>`<div id="d${i+1}" class="${i+1===8?"usual":""}">${i+1}${i+1===8?"<small>usual day</small>":""}</div>`).join("")}</div>
+ <div style="margin-top:28px;display:flex;align-items:baseline;gap:10px"><span id="lapse" style="font-size:56px;font-weight:900;color:#FF6B4A">0</span><span style="font-size:16px;color:#C7CFD8">days since her last<br>Amazon Pay payment</span></div></div>
+ ${phone("p1",900,110,"Day 10",`<div class="ntf warn"><b>Electricity bill · ₹840 due</b>You usually pay by the 8th. It's still open.</div><div style="font-size:11px;color:#6B7785">Last Amazon Pay payment: 34 days ago</div>`)}
+ <div class="abs f" id="scan" style="left:450px;top:478px;display:flex;align-items:center;gap:18px"><div class="radar" style="width:130px;height:130px"><div class="dot"></div></div><div><div class="chip or">⚡ Lapse detected</div><div style="margin-top:8px;font-size:15px;color:#E6EBF0;line-height:1.45">High-value user<br>no payment for a full cycle<br><b style="color:#FFD814">→ eligible for Pay Together</b></div></div></div>`,
+ c:[[0,()=>{on("r");emo("r","tired");cap("Riya used to pay every bill on Amazon Pay. This month, she has <b>gone quiet</b>.")}],[900,()=>{on("cal");say("r","Bills… I'll do it later 😮‍💨")}],[1800,()=>on("p1")],[2600,()=>{const d=Q("d10");d&&d.classList.add("today")}],[3200,()=>count("lapse",34,-1,"","",1600)],[5600,()=>{on("scan");say("r","");cap("No guessing with a churn score. The system simply <b>spots the lapse</b>: a valuable customer who missed her usual cycle.")}],[9000,()=>{emo("r","neutral");say("r","Hmm… what's this? 📱")}]]},
+{t:"02 · The offer",d:12000,b:()=>`${BG()}
+ ${who("riya","r",120,140,320,{by:-40})}
+ ${phone("p2",640,95,"Day 0","",1.12)}
+ <div class="abs f" id="sv" style="left:960px;top:470px"><div class="chip grn" style="font-size:20px">−₹15 saved ✨</div></div>
+ <div class="abs f" id="why" style="left:960px;top:150px;width:270px;font-size:17px;line-height:1.5;color:#E6EBF0"><div class="lbl">Same ₹30 budget</div><div style="margin-top:6px">Not ₹30 for one person.<br><b style="color:#FFD814">₹15 for her, ₹15 to give.</b></div></div>`,
+ c:[[0,()=>{on("r");on("p2");emo("r","neutral");cap("Amazon Pay sends a reminder, <b>with a twist</b>.")}],[900,()=>setPB("p2-pb",`<div class="ntf"><b>Your power bill is still open</b>Pay now and get a coupon you can share.</div>`)],[2300,()=>{setPB("p2-pb",`<div class="ntf"><b>Your power bill is still open</b>Pay now and get a coupon you can share.</div>${CPN()}<div style="font-size:11px;color:#6B7785">Expires in 7 days · one recipient · single use</div>`);emo("r","surprised");say("r","₹15 off… <i>and</i> ₹15 I can give away? 😮")}],[4200,()=>{emo("r","happy");on("why");cap("Instead of ₹30 just for her, the offer is split: <b>₹15 for her bill, ₹15 to share</b> with someone she knows.")}],[6400,()=>{say("r","");setPB("p2-pb",`${CPN()}<div class="card white" style="padding:10px 12px"><div class="row"><span>Electricity bill</span><span>₹840</span></div><div class="row"><span>Pay Together coupon</span><span>−₹15</span></div><div class="row t"><span>You pay</span><span>₹825</span></div></div><div class="btnp" id="pay2">Pay ₹825</div>`)}],[8000,()=>{const b=Q("pay2");b&&b.classList.add("press");tap("p2-tap",100,360)}],[8500,()=>{setPB("p2-pb",`${CPN("used")}<div class="ok"><div class="c">✓</div><b>₹825 paid</b><span>Her half of the coupon is used</span></div>`);emo("r","delighted");on("sv");say("r","Done! That was quick ✨");cap("She pays <b>₹825</b>. Her half is used. Half is still waiting to be shared.")}]]},
+{t:"03 · Riya shares",d:11000,b:()=>`${BG()}
+ ${who("riya","r",60,170,290,{by:-30})}
+ ${phone("p3",380,110,"Day 1","")}
+ ${who("kabir","kg",1010,250,190,{tag:false,cls:"r"})}
+ <div class="abs f" id="kq" style="left:1000px;top:200px;font-size:14px;color:#9AA5B1;text-align:center;width:210px">Kabir, somewhere across town…</div>
+ <div class="flyer" id="fly" style="left:520px;top:390px"><div class="t">₹15<small>from Riya 🎁</small></div></div>
+ <div class="trail" id="tr1" style="left:560px;top:400px">✨</div><div class="trail" id="tr2" style="left:540px;top:420px;animation-delay:.3s">💫</div>
+ <div class="abs f z" id="cfc" style="left:690px;top:520px"><div class="chip or" style="font-size:18px">🤝 +1 share → Cohesion Factor</div></div>`,
+ c:[[0,()=>{on("r");on("p3");emo("r","happy");cap("Now the fun part: <b>who gets the other ₹15?</b>")}],[700,()=>setPB("p3-pb",`<div style="font-weight:800;font-size:14px">Share your ₹15 with</div><div class="ct" id="ck"><i style="background:#2F7DA8">K</i><div><b>Kabir</b><small>Frequent contact</small></div></div><div class="ct"><i style="background:#8A94A6">M</i><div><b>Maa</b><small>Family</small></div></div><div class="ct"><i style="background:#8A94A6">S</i><div><b>Sana</b><small>Friend</small></div></div><div class="btnp" id="send">Send ₹15</div><div style="font-size:10.5px;color:#6B7785">One recipient · single-use link · not your own account</div>`)],[1600,()=>{on("kg","kq");emo("kg","neutral")}],[2400,()=>{const k=Q("ck");k&&k.classList.add("sel");tap("p3-tap",40,120);emo("r","delighted");say("r","Kabir always forgets his recharge 😄")}],[4600,()=>{const s=Q("send");s&&s.classList.add("press");tap("p3-tap",100,330);setPB("p3-pb",`${CPN("used sent")}<div class="ok"><div class="c" style="background:#FF9900;color:#131A22">➤</div><b>Sent to Kabir</b><span>Single-use link · expires day 7</span></div>`);const f=Q("fly");f&&f.classList.add("go");["tr1","tr2"].forEach(i=>{const t=Q(i);t&&t.classList.add("go")});say("r","");cap("One person. A single-use link. No self-referrals. <b>This share is what the Cohesion Factor counts.</b>")}],[7000,()=>{on("cfc");emo("kg","surprised")}]]},
+{t:"04 · Kabir receives",d:12000,b:()=>`${BG("warm")}
+ ${who("kabir","k",140,130,330,{by:-40})}
+ ${phone("p4",720,100,"Day 1",`<div style="margin:auto;text-align:center;color:#9AA5B1;font-size:13px">🎧 Kabir's day…</div>`,1.1)}
+ <div class="abs f" id="kfeel" style="left:1040px;top:170px;width:210px;font-size:16px;line-height:1.5;color:#E6EBF0"><div class="lbl">Why it lands</div><div style="margin-top:6px">A gift from a <b style="color:#FFD814">friend</b> feels nothing like another brand discount.</div></div>`,
+ c:[[0,()=>{on("k");on("p4");emo("k","neutral");cap("Kabir is busy with his own day. He rarely opens Amazon Pay.")}],[1600,()=>{const p=Q("p4");p&&p.classList.add("buzz");setPB("p4-pb",`<div class="ntf" style="background:#FFF3DB"><b>🎁 Riya sent you ₹15</b>Use it on one bill or recharge in the next 6 days.</div><div class="cpn" style="grid-template-columns:1fr"><div class="s"><b>₹15</b><span>From Riya 💛</span></div></div>`);emo("k","surprised");say("k","Wait… Riya sent me something? 😯")}],[3600,()=>{emo("k","blush");say("k","Aww, she remembered me! ☺️");on("kfeel");cap("A gift from a friend feels <b>very different</b> from another discount. Kabir smiles, and opens the app.")}],[7000,()=>setPB("p4-pb",`<div class="cpn" style="grid-template-columns:1fr"><div class="s"><b>₹15</b><span>From Riya 💛</span></div></div><div class="card white" style="padding:10px 12px"><div class="row"><span>Mobile recharge</span><span>₹299</span></div><div class="row"><span>Riya's coupon</span><span>−₹15</span></div><div class="row t"><span>You pay</span><span>₹284</span></div></div><div class="btnp" id="pay4">Pay ₹284</div>`)],[8600,()=>{const b=Q("pay4");b&&b.classList.add("press");tap("p4-tap",100,300)}],[9100,()=>{setPB("p4-pb",`<div class="ok"><div class="c">✓</div><b>Recharge done</b><span>₹284 paid with Riya's ₹15</span></div><div class="ntf" style="background:#E8F3F0"><b>💬 Sent to Riya</b>“Thanks! You're the best 🙌”</div>`);emo("k","delighted");say("k","Recharged. Thanks, Riya! 🙌");cap("He uses it on his recharge. <b>Two people paid</b>, from one ₹30 budget.")}]]},
+{t:"05 · Paying together",d:14000,b:()=>`${BG()}
+ <div class="link" id="lnk" style="left:400px;top:405px;width:480px"></div>
+ ${who("riya","r",130,150,240,{by:-30,tag:false})}${who("kabir","k",910,150,240,{rt:true,by:-96,tag:false})}
+ <div class="abs f" id="nr" style="left:200px;top:410px"><span class="chip dk">Riya</span></div><div class="abs f" id="nk" style="left:990px;top:410px"><span class="chip dk">Kabir</span></div>
+ <div class="ring" id="ring" style="left:570px;top:335px"><div><span>🤝</span>Paired<br>reward-free ✓</div></div>
+ <div class="tl f" id="tl" style="left:160px;top:560px;width:960px"><div class="fill" id="tlf"></div>
+  <div class="pin" style="left:0"></div><div class="mk" style="left:0">Day 0 · offer</div><div class="pin" style="left:19%"></div><div class="mk" style="left:19%">Day 7 · rewards end</div><div class="pin" style="left:100%"></div><div class="mk" style="left:100%">Day 37</div>
+  <div class="mk" style="left:60%;top:-30px;color:#2BB673">Days 8–37 · watching for reward-free payments</div></div>
+ <div class="pay f" id="py1" style="left:300px;top:470px">💧 Riya · water bill ₹410<small>Day 12 · no reward</small></div>
+ <div class="pay f" id="py2" style="left:560px;top:470px">📶 Kabir · broadband ₹520<small>Day 15 · no reward</small></div>
+ <div class="pay f" id="py3" style="left:820px;top:470px">📺 Riya · DTH ₹350<small>Day 21 · no reward</small></div>
+ <div class="abs f z" id="exp" style="left:540px;top:110px"><div class="chip dk" style="font-size:17px">⏱️ Day 7 · coupon expired for everyone</div></div>`,
+ c:[[0,()=>{on("r","k","tl","exp","nr","nk");emo("r","neutral");emo("k","neutral");cap("Day 7: the offer ends. <b>No more rewards</b>, for anyone.")}],[2400,()=>{off("exp");const f=Q("tlf");f&&(f.style.width="100%");cap("Now the real test: <b>do they come back on their own?</b>")}],[3600,()=>{on("py1");emo("r","happy")}],[5000,()=>{on("py2");emo("k","happy")}],[6400,()=>{on("py3")}],[8400,()=>{const a=Q("r"),b=Q("k");a&&(a.style.transition="transform 1.4s cubic-bezier(.2,.7,.2,1)",a.style.transform="translateX(140px)");b&&(b.style.transition="transform 1.4s cubic-bezier(.2,.7,.2,1)",b.style.transform="translateX(-140px)");off("nr","nk")}],[9200,()=>{const l=Q("lnk");l&&l.classList.add("on");setTimeout(()=>on("ring"),500);emo("r","delighted");emo("k","delighted");cap("Both did. <b>This pair counts as a reward-free repeat</b>, the one result that matters.")}],[10200,()=>{say("r","Told you it's easier here 😄");}],[11400,()=>say("k","Same app from now on 🤝")]]},
+{t:"06 · The group effect",d:14000,b:()=>{const pairs=[["iyer","divya","Paid her power bill","🔁 both returned"],["aarav","sameer","Split the Wi-Fi bill","🔁 both returned"],["fatima","zoya","Zoya never used it","✕ didn't convert"]];
+ return`${BG()}<div class="abs f" id="gh" style="left:60px;top:70px"><div class="lbl">Riya and Kabir are one pair. Meet a few more.</div></div>
+ ${pairs.map((p,i)=>`<div class="pcard f" id="pc${i}" style="left:${60+i*390}px;top:110px"><div class="mini">${avatar(p[0],"pa"+i)}<div class="nm">${CAST[p[0]].name}</div></div><div class="mid"><span class="arrow">₹15 →</span><b>${p[2]}</b><span style="font-size:11px">${CAST[p[1]].role}</span></div><div class="mini">${avatar(p[1],"pb"+i)}<div class="nm">${CAST[p[1]].name}</div></div><div class="res"><span class="chip ${i<2?"grn":"dk"}" style="font-size:12px;padding:5px 10px">${p[3]}</span></div></div>`).join("")}
+ <div class="grids f" id="grids" style="left:150px;top:318px">
+  <div class="gpanel"><h4><span style="font-size:15px;color:#9AA5B1">C · ₹30 for herself</span><span id="gc" style="color:#4FB3C4">0%</span></h4><div class="dots" id="dc"></div></div>
+  <div class="gpanel"><h4><span style="font-size:15px;color:#FFD814">D · Pay Together</span><span id="gd" style="color:#FF9900">0%</span></h4><div class="dots" id="dd"></div></div>
+ </div>
+ <div class="delta abs" id="dl" style="left:880px;top:360px;width:330px"><div class="chip or" style="font-size:30px;padding:14px 20px">+6.6 pts</div><div style="margin-top:12px;font-size:16px;line-height:1.5;color:#E6EBF0">more pairs paying again <b style="color:#FFD814">without a reward</b>. Same ₹30 budget.<br><span style="color:#9AA5B1;font-size:13px">Each dot = 10 pairs · simulated, 1,000 pairs per arm</span></div></div>`},
+ c:[[0,()=>{on("gh");cap("Riya and Kabir are one pair. Across the pilot, <b>thousands of pairs</b> get the same offer.")}],[500,()=>{on("pc0");emo("pa0","happy");emo("pb0","blush")}],[1300,()=>{on("pc1");emo("pa1","delighted");emo("pb1","happy")}],[2100,()=>{on("pc2");emo("pa2","thinking");emo("pb2","neutral")}],[3200,()=>{emo("pa0","delighted");emo("pb0","delighted");cap("Some shares bring both people back. <b>Some don't</b>: Zoya never used hers. That's why we measure.")}],[5400,()=>{const mk=(id,n,cls)=>{const g=Q(id);if(!g)return;g.innerHTML=Array.from({length:100},()=>`<div class="pr"><i></i><b></b><i></i></div>`).join("");const idx=[...Array(100).keys()].sort((a,b)=>((a*37)%101)-((b*37)%101));idx.slice(0,n).forEach((k,j)=>setTimeout(()=>g.children[k].classList.add(cls),j*55))};on("grids");mk("dc",26,"litc");mk("dd",33,"lit");count("gc",R.arms.C.groupRepeat*100,1,"","%",1800);count("gd",R.arms.D.groupRepeat*100,1,"","%",2000);cap("Across 1,000 pairs per arm, the same ₹30 brings <b>more pairs back</b> when half of it is shared.")}],[9200,()=>{on("dl");cap("That lift, not the number of shares, is <b>the group effect</b> we are paying for.")}]]},
+{t:"07 · Meera's dashboard",d:16000,b:()=>`${BG()}
+ ${who("meera","m",60,150,300,{by:-60,tag:false})}<div class="abs card f" id="ml" style="left:70px;top:470px;padding:10px 14px"><b style="font-size:18px">Meera</b><div style="font-size:13px;color:#C7CFD8">35 · Growth Manager, Amazon Pay</div></div>
+ <div class="desk" style="left:20px;top:440px;width:390px"></div><div class="mug" style="left:310px;top:386px">☕</div>
+ ${dash("dsh","habit")}`,
+ c:[[0,()=>{on("m","ml");emo("m","anxious");say("m","Did we just pay for bills that would've been paid anyway? 😬");cap("Meet <b>Meera</b>, Growth Manager at Amazon Pay. She owns the budget, and she's <b>nervous</b>.")}],[2400,()=>{on("dsh");dashFill("dsh","habit");emo("m","thinking");say("m","Lots of sharing… but did habits change? 🤔");cap("Her dashboard tracks <b>payment frequency</b>, <b>average payment amount</b> and the new <b>Cohesion Factor</b>.")}],[6200,()=>{dashBars("dsh","habit");say("m","");cap("The key chart: how many pairs paid again <b>with no reward</b>, arm by arm.")}],[8600,()=>{gate("dsh",1,true);emo("m","surprised");say("m","+6.6 points? Oh!")}],[9600,()=>{gate("dsh",2,true);emo("m","relieved");say("m","Phew… it beats the ₹30 coupon 😮‍💨")}],[10700,()=>{gate("dsh",3,true);cap("And it beats a <b>plain reminder</b>. All three gates pass.")}],[11800,()=>{on("dsh-vd");emo("m","delighted");confetti();say("m","Both came back AND it pays off. Let's scale the test! 🎉");cap("Only when <b>all three gates pass</b> does Pay Together earn a bigger budget.")}]]},
+{t:"08 · The honest check",d:10000,b:()=>`${BG()}
+ ${who("meera","m",60,150,300,{by:-60,tag:false})}<div class="abs card f" id="ml" style="left:70px;top:470px;padding:10px 14px"><b style="font-size:18px">Meera</b><div style="font-size:13px;color:#C7CFD8">35 · Growth Manager, Amazon Pay</div></div>
+ <div class="desk" style="left:20px;top:440px;width:390px"></div><div class="mug" style="left:310px;top:386px">☕</div>
+ ${dash("ds2","shallow")}`,
+ c:[[0,()=>{on("m","ml");on("ds2");dashFill("ds2","shallow");dashBars("ds2","shallow");emo("m","thinking");cap("But what if people share… and <b>nothing else changes</b>?")}],[2600,()=>{emo("m","skeptical");say("m","Same 51% sharing… but no new habit. 🧐")}],[4000,()=>{gate("ds2",1,false)}],[4800,()=>{gate("ds2",2,true);cap("It still looks cheaper than ₹30, but only because <b>shared halves go unused</b>.")}],[5800,()=>{gate("ds2",3,false);emo("m","worried")}],[6800,()=>{on("ds2-vd");emo("m","neutral");say("m","Hold. Sharing alone isn't success.");cap("The same dashboard tells Meera to <b>stop</b>. Sharing isn't success. Coming back without a reward is.")}]]},
+{t:"Close",d:8000,b:()=>`${BG("warm")}
+ <div class="abs f" id="q" style="left:80px;top:90px;width:1120px"><div class="quote">“Give customers something to <span style="color:#FFD814">use</span> and something to <span style="color:#FF9900">share</span>. Then let what <span class="hl">both people do after the offer ends</span> decide the budget.”</div></div>
+ ${who("riya","e1",130,330,150,{role:" "})}${who("kabir","e2",300,330,150,{role:" "})}${who("divya","e3",470,350,130,{role:" "})}${who("aarav","e4",620,350,130,{role:" "})}${who("meera","e5",780,330,150,{role:" "})}
+ <div class="abs f" id="tm2" style="left:960px;top:400px;width:260px"><div class="lbl">Team VISHWAKARMA</div><div style="font-size:24px;font-weight:900;margin-top:4px">DataZoids 5.0</div><div style="color:#C7CFD8;font-size:14px;margin-top:4px">Amazon Pay India case · KOED</div></div>`,
+ c:[[0,()=>{on("q");cap("Pay Together: <b>₹15 to use, ₹15 to share</b>, and a pilot that only scales what brings both people back.")}],[800,()=>{["e1","e2","e3","e4","e5"].forEach((i,k)=>setTimeout(()=>{on(i);emo(i,k===4?"relieved":"delighted")},k*200))}],[2400,()=>on("tm2")],[3600,()=>{emo("e1","blush");emo("e2","blush")}]]}
+];
+/* ================= player ================= */
+const TOTAL=SC.reduce((s,x)=>s+x.d,0);const starts=[];SC.reduce((s,x,i)=>(starts[i]=s,s+x.d),0);
+const chap=document.getElementById("chap"),tmEl=document.getElementById("tm"),bar=document.getElementById("bar");
+SC.forEach((s,i)=>{if(i){const t=document.createElement("div");t.className="tick";t.style.left=(starts[i]/TOTAL*100)+"%";stage.querySelector(".prog").appendChild(t)}});
+const SPEED=Math.max(1,+(new URLSearchParams(location.search).get("speed"))||1);let cur=-1,el=0,fired=0,playing=false,last=performance.now(),mode="auto",unlocked=false;
+function load(i,play){cur=i;el=0;fired=0;const L=document.createElement("div");L.className="layer";L.innerHTML=SC[i].b();stage.insertBefore(L,stage.querySelector(".hud"));const old=layer;layer=L;requestAnimationFrame(()=>requestAnimationFrame(()=>L.classList.add("in")));if(old){old.classList.add("out");setTimeout(()=>old.remove(),800)}chap.textContent=SC[i].t;SC[i].c.sort((a,b)=>a[0]-b[0]);playing=play!==false;stage.classList.toggle("paused",!playing);syncDock()}
+const fmt=ms=>{const s=Math.floor(ms/1000);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
+function loop(now){const dt=Math.min(100,now-last);last=now;if(playing&&cur>=0){el+=dt*SPEED;const sc=SC[cur];while(fired<sc.c.length&&sc.c[fired][0]<=el){try{sc.c[fired][1]()}catch(e){console.error(e)}fired++}
+ const g=Math.min(TOTAL,starts[cur]+el);bar.style.width=(g/TOTAL*100)+"%";tmEl.textContent=fmt(g)+" / "+fmt(TOTAL);
+ if(el>=sc.d){if(mode==="auto"){if(cur<SC.length-1)load(cur+1);else finish()}else{playing=false;stage.classList.add("paused");syncDock()}}}
+ requestAnimationFrame(loop)}
+function finish(){playing=false;mode="manual";if(!unlocked){unlocked=true;document.getElementById("dock").classList.add("on");buildExplore()}syncDock()}
+/* dock */
+const chips=document.getElementById("chips");
+SC.forEach((s,i)=>{const b=document.createElement("button");b.textContent=s.t.replace(/^\d+ · /,(m)=>m);b.onclick=()=>{mode="manual";load(i)};chips.appendChild(b)});
+function syncDock(){[...chips.children].forEach((b,i)=>b.classList.toggle("on",i===cur));const p=document.getElementById("bPlay");if(p)p.textContent=playing?"❚❚ Pause":(el>=(SC[cur]||{}).d?"↻ Replay chapter":"▶ Play")}
+document.getElementById("bPlay").onclick=()=>{if(el>=SC[cur].d){load(cur);return}playing=!playing;stage.classList.toggle("paused",!playing);syncDock()};
+document.getElementById("bNext").onclick=()=>{mode="manual";load(Math.min(SC.length-1,cur+1))};
+document.getElementById("bPrev").onclick=()=>{mode="manual";load(Math.max(0,cur-1))};
+document.getElementById("bAll").onclick=()=>{mode="auto";load(0);window.scrollTo({top:0,behavior:"smooth"})};
+document.getElementById("bExp").onclick=()=>document.getElementById("explore").scrollIntoView({behavior:"smooth"});
+document.addEventListener("keydown",e=>{if(!unlocked)return;if(e.key==="ArrowRight")document.getElementById("bNext").click();if(e.key==="ArrowLeft")document.getElementById("bPrev").click();if(e.key===" "){e.preventDefault();document.getElementById("bPlay").click()}});
+/* scale */
+function fit(){const fr=document.getElementById("frame");const narrow=window.innerWidth<900;const avH=window.innerHeight-(unlocked?205:70)-(narrow?90:0);const s=Math.min((window.innerWidth-24)/1280,Math.max(240,avH)/720);stage.style.transform=`scale(${s})`;fr.style.width=1280*s+"px";fr.style.height=720*s+(narrow?0:0)+"px";capEl.style.fontSize=narrow?"":Math.max(14,23*s)+"px";capEl.style.bottom=narrow?"":(28*s)+"px"}
+window.addEventListener("resize",fit);
+/* ================= explore (manual mode) ================= */
+function buildExplore(){const ex=document.getElementById("explore");
+ const ppl=[["riya","Usually pays every bill here; went quiet for 34 days.","tired","delighted"],["kabir","Rarely opens the app; a gift from a friend brought him in.","neutral","blush"],["iyer","Pays his daughter's power bill; both kept paying.","thinking","happy"],["divya","Received ₹15 from her father; now pays her own bills here.","surprised","blush"],["aarav","Student who splits the Wi-Fi bill with his roommate.","neutral","delighted"],["sameer","Roommate who got ₹15 and stayed.","surprised","happy"],["fatima","Shared her ₹15, but the share didn't convert.","neutral","thinking"],["meera","Growth Manager who decides the budget from the dashboard.","anxious","delighted"]];
+ ex.innerHTML=`<h2>Meet the <i>people</i></h2><div class="sub">Fictional personas. Tap an emotion to see how each one reacts.</div>
+ <div class="pgrid">${ppl.map((p,i)=>`<div class="pcx"><div>${avatar(p[0],"x"+i)}</div><div><b>${CAST[p[0]].name}</b><small>${CAST[p[0]].role}</small><p>${p[1]}</p><div class="emo">${["neutral","happy","blush","delighted","surprised","thinking","anxious","skeptical"].map(e=>`<button data-a="x${i}" data-e="${e}">${e}</button>`).join("")}</div></div></div>`).join("")}</div>
+ <h2>Meera's <i>dashboard</i>, live</h2><div class="sub">Switch scenarios or move the sliders. The gates and verdict update instantly. All values are simulated.</div>
+ <div class="xdash"><div class="xbox"><div class="seg" id="xseg"><button data-s="habit" class="on">Scenario 1 · habit forms</button><button data-s="shallow">Scenario 2 · shared, no habit</button></div>
+  <div class="sl"><label>🤝 Cohesion Factor (share rate)<span id="o1"></span></label><input type="range" id="s1" min="0" max="90"></div>
+  <div class="sl"><label>🎟️ Contacts who redeem, among sharers<span id="o2"></span></label><input type="range" id="s2" min="0" max="90"></div>
+  <div class="sl"><label>🔁 Sender reward-free repeat (arm D)<span id="o3"></span></label><input type="range" id="s3" min="10" max="35" step="0.5"></div>
+  <div class="sl"><label>🔁 Contact reward-free repeat (arm D)<span id="o4"></span></label><input type="range" id="s4" min="5" max="25" step="0.5"></div>
+  <table class="xt" id="xt"></table></div>
+  <div class="xbox" id="xg"></div></div>
+ <h2>What Meera <i>tracks</i></h2><div class="sub">Payment frequency and average amount show behaviour. The Cohesion Factor shows sharing. Only the randomised comparison shows cause.</div>
+ <div class="mdefs"><div class="md"><b>🔁 Payment frequency</b><code>reward-free payments (days 8–37) ÷ assigned pairs</code>How often the pair pays once the offer is gone.</div><div class="md"><b>🧾 Average payment amount</b><code>payment value ÷ successful payments</code>Read with total volume: more small contact payments can lower the average.</div><div class="md new"><b>🤝 Cohesion Factor · new</b><code>pairs that shared ÷ pairs offered sharing</code>Sharing adoption. Not proof of impact on its own.</div><div class="md"><b>🎟️ Contact redemption</b><code>contacts who used it ÷ sharing pairs</code>Whether the shared half reaches a payment.</div><div class="md"><b>✅ Reward-free repeat · primary</b><code>pairs paying again without reward ÷ assigned pairs</code>Did either person come back without being paid to?</div><div class="md"><b>💹 Incremental contribution</b><code>Δ margin − Δ rewards − Δ campaign cost</code>Measured against the ₹30 coupon and against a plain reminder.</div></div>`;
+ ex.classList.add("on");
+ ex.querySelectorAll(".emo button").forEach(b=>b.onclick=()=>{const a=document.getElementById(b.dataset.a+"");a&&a.setAttribute("data-emo",b.dataset.e)});
+ let sc="habit",ov={};const g=id=>document.getElementById(id);
+ function rx(){const r=PT_MODEL.compute(sc,ov),a=r.arms,c=r.cmp,s=r.scenario;
+  g("s1").value=(ov.share??s.share)*100;g("s2").value=(ov.recipRedeem??s.recipRedeem)*100;g("s3").value=(ov.Ds??s.D.s)*100;g("s4").value=(ov.Dr??s.D.r)*100;
+  g("o1").textContent=Math.round(g("s1").value)+"%";g("o2").textContent=Math.round(g("s2").value)+"%";g("o3").textContent=(+g("s3").value).toFixed(1)+"%";g("o4").textContent=(+g("s4").value).toFixed(1)+"%";
+  const nm={A:"A · usual",B:"B · reminder",C:"C · ₹30 for self",D:"D · Pay Together"};
+  g("xt").innerHTML=`<tr><th>Arm</th><th>Pair repeat</th><th>Sender</th><th>Contact</th><th>Pay freq</th><th>Avg amount</th><th>Contribution / pair</th></tr>`+["A","B","C","D"].map(k=>{const x=a[k];return`<tr class="${k==="D"?"d":""}"><td>${nm[k]}</td><td>${(x.groupRepeat*100).toFixed(1)}%</td><td>${(x.senderRepeat*100).toFixed(1)}%</td><td>${(x.contactRepeat*100).toFixed(1)}%</td><td>${x.payFreq.toFixed(2)}</td><td>₹${Math.round(x.avgAmt)}</td><td>₹${x.contributionPerGroup.toFixed(2)}</td></tr>`}).join("");
+  const ic=p=>`<span class="ic" style="background:${p?"#067D62":"#B12704"}">${p?"✓":"✕"}</span>`;const go=r.verdict.startsWith("Advance");
+  g("xg").innerHTML=`<div class="lbl" style="margin-bottom:10px">Decision gates</div><div class="xg">${ic(r.gates.repeat)}<span>Reward-free repeat lift vs ₹30 coupon: <b>${c.repeatPP>=0?"+":""}${c.repeatPP.toFixed(1)} pts</b> (95% range ${c.repeatLo.toFixed(1)} to ${c.repeatHi.toFixed(1)})</span></div><div class="xg">${ic(r.gates.vsC)}<span>Contribution vs ₹30 coupon: <b>${inr(c.contribDvC)}</b> per 1,000 pairs</span></div><div class="xg">${ic(r.gates.vsB)}<span>Contribution vs plain reminder: <b>${inr(c.contribDvB)}</b> per 1,000 pairs</span></div><div class="xv" style="background:${go?"#067D62":"#232F3E"}">${r.verdict}<div style="font-size:13px;font-weight:600;opacity:.9;margin-top:4px">${r.why}</div></div>
+  <div style="display:flex;align-items:center;gap:12px;margin-top:14px"><div style="width:110px">${avatar("meera","xm")}</div><div style="font-size:14px;color:#D5DBE2;line-height:1.5">${go?"Meera is <b style='color:#FFD814'>delighted</b>: both people came back, and the money works.":r.gates.vsC&&!r.gates.repeat?"Meera is <b style='color:#FFD814'>skeptical</b>: lots of sharing, no new habit.":"Meera is <b style='color:#FFD814'>worried</b>: this doesn't earn its budget."}</div></div>`;
+  const m=document.getElementById("xm");m&&m.setAttribute("data-emo",go?"delighted":r.gates.vsC&&!r.gates.repeat?"skeptical":"worried")}
+ g("xseg").querySelectorAll("button").forEach(b=>b.onclick=()=>{sc=b.dataset.s;ov={};g("xseg").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));rx()});
+ [["s1","share"],["s2","recipRedeem"],["s3","Ds"],["s4","Dr"]].forEach(([i,k])=>g(i).addEventListener("input",e=>{ov[k]=e.target.value/100;rx()}));
+ rx();fit()}
+/* go */
+fit();load(0);requestAnimationFrame(loop);
+window.PTW={load:(i)=>{mode="manual";load(i)},finish,seek:(i,t)=>{mode="manual";load(i);el=0;const sc=SC[i];while(fired<sc.c.length&&sc.c[fired][0]<=t){sc.c[fired][1]();fired++}el=t;playing=false;stage.classList.add("paused")}};
+})();
+</script>
+</body>
+</html>
